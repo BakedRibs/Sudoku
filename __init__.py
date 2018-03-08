@@ -12,10 +12,8 @@ class SudokuGrid(QWidget):
         self.setWindowTitle('SUDOKU')
         
         self.sudokuGrid = []
-        self.sudokuNew = []
         for i in range(3):
             self.sudokuGrid.append([])
-            self.sudokuNew.append([])
             for j in range(3):
                 smallGrid = QTableWidget(3, 3)
                 smallGrid.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -27,31 +25,18 @@ class SudokuGrid(QWidget):
                     smallGrid.setRowHeight(r, 30)
                     smallGrid.setColumnWidth(r, 30)
                 self.sudokuGrid[i].append(smallGrid)
-                self.sudokuNew[i].append([])
-        
-        self.sudokuNum = []
-        self.sudokuCheck = []
-        for i in range(9):
-            self.sudokuNum.append([])
-            self.sudokuCheck.append([])
-            for j in range(9):
-                smallNum = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-                self.sudokuNum[i].append(smallNum)
-                self.sudokuCheck[i].append(0)
                 
-        self.sudokuGridInit()
+        self.fillBt = QPushButton('NextMove')
                 
         sudokuLayout = QGridLayout()
         sudokuLayout.setSpacing(1)
         for i in range(3):
             for j in range(3):
                 sudokuLayout.addWidget(self.sudokuGrid[i][j], i, j)
-                
-        self.nextMoveBt = QPushButton('NextMove')
         
         controlLayout = QHBoxLayout()
         controlLayout.addStretch()
-        controlLayout.addWidget(self.nextMoveBt)
+        controlLayout.addWidget(self.fillBt)
         controlLayout.addStretch()
         
         mainLayout = QVBoxLayout()
@@ -60,10 +45,24 @@ class SudokuGrid(QWidget):
         
         self.setLayout(mainLayout)
         self.show()
-        
-        self.nextMoveBt.clicked.connect(self.nextMoveBtClicked)
+        self.sudokuGridInit()
+        self.fillBt.clicked.connect(self.fillBtClicked)
         
     def sudokuGridInit(self):
+        self.insertList = []
+        for i in range(3):
+            for j in range(3):
+                for p in range(3):
+                    for q in range(3):
+                        self.setSudokuGrid('', i, j, p, q)
+                        
+        self.sudokuNum = []
+        for i in range(9):
+            self.sudokuNum.append([])
+            for j in range(9):
+                smallNum = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+                self.sudokuNum[i].append(smallNum)
+                
         self.setGridItem(1, 2, 2)
         self.setGridItem(1, 4, 5)
         self.setGridItem(0, 6, 1)
@@ -81,6 +80,7 @@ class SudokuGrid(QWidget):
         self.setGridItem(8, 4, 4)
         self.setGridItem(8, 6, 2)
         self.setGridItem(8, 7, 6)
+        
         self.showAllAlone()
         
     def setGridItem(self, row, column, number):
@@ -115,24 +115,6 @@ class SudokuGrid(QWidget):
         temp.setFont(QFont("Microsoft YaHei", 18))
         self.sudokuGrid[i][j].setItem(ii, jj, temp)
         
-    def nextMoveBtClicked(self):
-        for i in range(3):
-            for j in range(3):
-                numCount = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-                for p in range(3):
-                    for q in range(3):
-                        for n in self.sudokuNum[i*3+p][j*3+q]:
-                            numCount[n-1] = numCount[n-1] + 1
-                for b in range(9):
-                    if numCount[b] == 1:
-                        if b+1 in self.sudokuNew[i][j]:
-                            pass
-                        else:
-                            for p in range(3):
-                                for q in range(3):
-                                    if b+1 in self.sudokuNum[i*3+p][j*3+q]:
-                                        self.setSudokuGrid(b+1, i, j, p, q)
-        
     def showAllAlone(self):
         for i in range(9):
             for j in range(9):
@@ -142,8 +124,23 @@ class SudokuGrid(QWidget):
                     temp.setTextAlignment(Qt.AlignCenter)
                     temp.setFont(QFont("Microsoft YaHei", 18))
                     self.sudokuGrid[i//3][j//3].setItem(i%3, j%3, temp)
-                    self.sudokuCheck[i][j] = 1
-                    self.sudokuNew[i//3][j//3].append(self.sudokuNum[i][j][0])
+                    
+    def fillBtClicked(self):
+        lenTotal = 0
+        for i in range(9):
+            for j in range(9):
+                lenTotal += len(self.sudokuNum[i][j])
+        while lenTotal > 81:
+            lenMinButOne = 9
+            for i in range(9):
+                for j in range(9):
+                    if len(self.sudokuNum[i][j]) <= lenMinButOne:
+                        if len(self.sudokuNum[i][j]) != 1:
+                            lenMinButOne = len(self.sudokuNum[i][j])
+            for i in range(9):
+                for j in range(9):
+                    if len(self.sudokuNum[i][j]) == lenMinButOne:
+                        pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
