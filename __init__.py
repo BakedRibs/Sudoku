@@ -64,26 +64,26 @@ class SudokuGrid(QWidget):
         self.sudokuNumInit()
                 
         self.insertList = []
-        self.insertList.append([1, 2, 2])
-        self.insertList.append([1, 4, 5])
-        self.insertList.append([0, 6, 1])
-        self.insertList.append([0, 8, 3])
-        self.insertList.append([3, 0, 1])
-        self.insertList.append([3, 5, 7])
-        self.insertList.append([4, 3, 9])
-        self.insertList.append([4, 5, 3])
-        self.insertList.append([4, 7, 5])
-        self.insertList.append([5, 2, 4])
-        self.insertList.append([5, 7, 2])
-        self.insertList.append([6, 0, 7])
-        self.insertList.append([7, 0, 3])
-        self.insertList.append([7, 4, 6])
-        self.insertList.append([8, 4, 4])
-        self.insertList.append([8, 6, 2])
-        self.insertList.append([8, 7, 6])
+        self.insertList.append([[1, 2, 2]])
+        self.insertList.append([[1, 4, 5]])
+        self.insertList.append([[0, 6, 1]])
+        self.insertList.append([[0, 8, 3]])
+        self.insertList.append([[3, 0, 1]])
+        self.insertList.append([[3, 5, 7]])
+        self.insertList.append([[4, 3, 9]])
+        self.insertList.append([[4, 5, 3]])
+        self.insertList.append([[4, 7, 5]])
+        self.insertList.append([[5, 2, 4]])
+        self.insertList.append([[5, 7, 2]])
+        self.insertList.append([[6, 0, 7]])
+        self.insertList.append([[7, 0, 3]])
+        self.insertList.append([[7, 4, 6]])
+        self.insertList.append([[8, 4, 4]])
+        self.insertList.append([[8, 6, 2]])
+        self.insertList.append([[8, 7, 6]])
         
         for i in range(len(self.insertList)):
-            self.setGridItem(self.insertList[i][0], self.insertList[i][1], self.insertList[i][2])
+            self.setGridItem(self.insertList[i][len(self.insertList[i])-1][0], self.insertList[i][len(self.insertList[i])-1][1], self.insertList[i][len(self.insertList[i])-1][2])
         
         self.showAllAlone()
         
@@ -145,6 +145,12 @@ class SudokuGrid(QWidget):
             for j in range(9):
                 lenTotal += len(self.sudokuNum[i][j])
         while lenTotal > 81:
+            for i in range(9):
+                for j in range(9):
+                    self.sudokuNum[i][j] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+            for i in range(len(self.insertList)):
+                self.sudokuNum[self.insertList[i][len(self.insertList[i])-1][0]][self.insertList[i][len(self.insertList[i])-1][1]] = [self.insertList[i][len(self.insertList[i])-1][2]]
+                self.removeOthers(self.insertList[i][len(self.insertList[i])-1][0], self.insertList[i][len(self.insertList[i])-1][1], self.insertList[i][len(self.insertList[i])-1][2])
             lenMinButOne = 9
             minI = 0
             minJ = 0
@@ -162,9 +168,13 @@ class SudokuGrid(QWidget):
                 currentInsert.append([minI, minJ, self.sudokuNum[minI][minJ][cur]])
             self.insertList.append(currentInsert)
             self.removeOthers(minI, minJ, currentInsert[len(currentInsert)-1][2])
+            if len(self.insertList) == 60:
+                asd = 1
             checkRe = self.checkOne()
             if checkRe == 1:
-                checkRe = 0
+                while len(self.insertList[len(self.insertList)-1]) == 1:
+                    self.insertList.pop()
+                self.insertList[len(self.insertList)-1].pop()
             pass
             
     def checkOne(self):
