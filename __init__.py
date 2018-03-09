@@ -55,6 +55,12 @@ class SudokuGrid(QWidget):
                     for q in range(3):
                         self.setSudokuGrid('', i, j, p, q)
                         
+        self.newOne = []
+        for i in range(9):
+            self.newOne.append([])
+            for j in range(9):
+                self.newOne[i].append(0)
+                
         self.sudokuNumInit()
                 
         self.insertList = []
@@ -114,6 +120,8 @@ class SudokuGrid(QWidget):
             return
         if number in self.sudokuNum[row][column]:
             self.sudokuNum[row][column].remove(number)
+            if len(self.sudokuNum[row][column]) == 1:
+                self.newOne[row][column] = 1
             
     def setSudokuGrid(self, number, i, j, ii, jj):
         temp = QTableWidgetItem(str(number))
@@ -142,6 +150,7 @@ class SudokuGrid(QWidget):
             minJ = 0
             for i in range(9):
                 for j in range(9):
+                    self.newOne[i][j] = 0
                     if len(self.sudokuNum[i][j]) <= lenMinButOne:
                         if len(self.sudokuNum[i][j]) != 1:
                             lenMinButOne = len(self.sudokuNum[i][j])
@@ -152,7 +161,36 @@ class SudokuGrid(QWidget):
             for cur in range(lenMinButOne):
                 currentInsert.append([minI, minJ, self.sudokuNum[minI][minJ][cur]])
             self.insertList.append(currentInsert)
+            self.removeOthers(minI, minJ, currentInsert[len(currentInsert)-1][2])
+            checkRe = self.checkOne()
+            if checkRe == 1:
+                checkRe = 0
             pass
+            
+    def checkOne(self):
+        for i in range(9):
+            for j in range(9):
+                if self.newOne[i][j] == 1:
+                    for p in range(9):
+                        if len(self.sudokuNum[i][p]) == 1:
+                            if p != j:
+                                if self.sudokuNum[i][j] == self.sudokuNum[i][p]:
+                                    return 1
+                        if len(self.sudokuNum[p][j]) == 1:
+                            if p != i:
+                                if self.sudokuNum[i][j] == self.sudokuNum[p][j]:
+                                    return 1
+                    for p in range(3):
+                        for q in range(3):
+                            iD = i // 3
+                            jD = j // 3
+                            iY = i % 3
+                            jY = j % 3
+                            if len(self.sudokuNum[iD*3+p][jD*3+q]) == 1:
+                                if (p != iY) or (q != jY):
+                                   if self.sudokuNum[i][j] == self.sudokuNum[iD*3+p][jD*3+q]:
+                                       return 1
+        return 0
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
