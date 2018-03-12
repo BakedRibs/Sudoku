@@ -54,6 +54,10 @@ class SudokuGrid(QWidget):
                 for p in range(3):
                     for q in range(3):
                         self.setSudokuGrid('', i, j, p, q)
+        
+        self.newOnlyOne = []
+        for i in range(9):
+            self.newOnlyOne.append([0, 0, 0, 0, 0, 0, 0, 0, 0])
 
         self.sudokuNumInit()
 
@@ -78,6 +82,7 @@ class SudokuGrid(QWidget):
 
         for i in range(len(self.insertListConfirmed)):
             self.setGridItem(self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][0], self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][1], self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][2])
+            self.newOnlyOne[self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][0]][self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][1]] = 1
 
         self.showAllAlone()
 
@@ -133,18 +138,56 @@ class SudokuGrid(QWidget):
 
     def fillBtClicked(self):
         self.insertListDoubt = []
-        
-        x3_3 = 1
-        y3_3 = 1
-        for p in range(3):
-            for q in range(3):
-                currentInsert = []
-                for length in range(len(self.sudokuNum[x3_3*3+p][y3_3*3+q])):
-                    currentInsert.append([x3_3*3+p, y3_3*3+q, self.sudokuNum[x3_3*3+p][y3_3*3+q][length]])
-                self.insertListDoubt.append(currentInsert)
-        for length in range(len(self.insertListDoubt)):
-            self.removeOthers(self.insertListDoubt[length][len(self.insertListDoubt[length])-1][0], self.insertListDoubt[length][len(self.insertListDoubt[length])-1][1], self.insertListDoubt[length][len(self.insertListDoubt[length])-1][2])
-        pass
+        while len(self.insertListDoubt) < 81 - len(self.insertListConfirmed):
+            findNewOne = self.findOnlyOne()
+            pass
+            
+    def findOnlyOne(self):
+        self.currentInsert = []
+        for i in range(9):
+            appearTimes = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            for j in range(9):
+                for length in range(len(self.sudokuNum[i][j])):
+                    appearTimes[self.sudokuNum[i][j][length]-1] += 1
+            for p in range(9):
+                if appearTimes[p] == 1:
+                    for j in range(9):
+                        if p+1 in self.sudokuNum[i][j]:
+                            if self.newOnlyOne[i][j] == 0:
+                                self.currentInsert.append([[i, j, p+1]])
+                                self.newOnlyOne[i][j] = 1
+                                return 1
+                                
+        for j in range(9):
+            appearTimes = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            for i in range(9):
+                for length in range(len(self.sudokuNum[i][j])):
+                    appearTimes[self.sudokuNum[i][j][length]-1] += 1
+            for p in range(9):
+                if appearTimes[p] == 1:
+                    for i in range(9):
+                        if p+1 in self.sudokuNum[i][j]:
+                            if self.newOnlyOne[i][j] == 0:
+                                self.currentInsert.append([[i, j, p+1]])
+                                self.newOnlyOne[i][j] = 1
+                                return 1
+                                
+        for i in range(3):
+            for j in range(3):
+                appearTimes = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+                for p in range(3):
+                    for q in range(3):
+                        for length in range(len(self.sudokuNum[i*3+p][j*3+q])):
+                            appearTimes[self.sudokuNum[i*3+p][j*3+q][length]-1] += 1
+                for o in range(9):
+                    if appearTimes[o] == 1:
+                        for p in range(3):
+                            for q in range(3):
+                                if o+1 in self.sudokuNum[i*3+p][j*3+q]:
+                                    if self.newOnlyOne[i*3+p][j*3+q] == 0:
+                                        self.currentInsert.append([[i*3+p, j*3+q, o+1]])
+                                        self.newOnlyOne[i*3+p][j*3+q] = 1
+                                        return 1
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
