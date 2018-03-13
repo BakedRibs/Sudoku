@@ -26,7 +26,7 @@ class SudokuGrid(QWidget):
                     smallGrid.setColumnWidth(r, 30)
                 self.sudokuGrid[i].append(smallGrid)
 
-        self.fillBt = QPushButton('NextMove')
+        self.fillBt = QPushButton('填充')
 
         sudokuLayout = QGridLayout()
         sudokuLayout.setSpacing(1)
@@ -138,16 +138,57 @@ class SudokuGrid(QWidget):
 
     def fillBtClicked(self):
         self.insertListDoubt = []
-        while len(self.insertListDoubt) < 81 - len(self.insertListConfirmed):
+        while True:
             self.reloadSudokuNum()
+            falseHappen = self.checkCorrect()
+            if falseHappen == 1:
+                while len(self.insertListDoubt[len(self.insertListDoubt)-1]) == 1:
+                    self.insertListDoubt.pop()
+                self.insertListDoubt[len(self.insertListDoubt)-1].pop()
+                continue
             findNewOne = self.findOnlyOne()
             if findNewOne == 1:
                 self.insertListDoubt.append(self.currentInsert)
             else:
-                self.findOnlyTwo()
+                allSettle = self.findOnlyTwo()
+                if allSettle == 1:
+                    falseHappen = self.checkCorrect()
+                    if falseHappen == 0:
+                        break
                 self.insertListDoubt.append(self.currentInsert)
             asd = 0
-        pass
+        for i in range(9):
+            for j in range(9):
+                self.setSudokuGrid(self.sudokuNum[i][j][0], i//3, j//3, i%3, j%3)
+        self.fillBt.setEnabled(False)
+        
+    def checkCorrect(self):
+        for i in range(9):
+            once = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            for j in range(9):
+                if len(self.sudokuNum[i][j]) == 1:
+                    once[self.sudokuNum[i][j][0]-1] += 1
+            if 2 in once:
+                return 1
+        
+        for j in range(9):
+            once = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            for i in range(9):
+                if len(self.sudokuNum[i][j]) == 1:
+                    once[self.sudokuNum[i][j][0]-1] += 1
+            if 2 in once:
+                return 1
+                
+        for i in range(3):
+            for j in range(3):
+                once = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+                for p in range(3):
+                    for q in range(3):
+                        if len(self.sudokuNum[i*3+p][j*3+q]) == 1:
+                            once[self.sudokuNum[i*3+p][j*3+q][0]-1] += 1
+                if 2 in once:
+                    return 1
+        return 0
         
     def reloadSudokuNum(self):
         for i in range(9):
@@ -156,10 +197,12 @@ class SudokuGrid(QWidget):
         for i in self.insertListConfirmed:
             self.sudokuNum[i[0][0]][i[0][1]] = [i[0][2]]
             self.removeOthers(i[0][0], i[0][1], i[0][2])
+            self.newOnlyOne[i[0][0]][i[0][1]] = 1
         for i in self.insertListDoubt:
             k = len(i) - 1
             self.sudokuNum[i[k][0]][i[k][1]] = [i[k][2]]
             self.removeOthers(i[k][0], i[k][1], i[k][2])
+            self.newOnlyOne[i[k][0]][i[k][1]] = 1
             
     def findOnlyTwo(self):
         self.currentInsert = []
@@ -174,8 +217,11 @@ class SudokuGrid(QWidget):
                         short = length
                         minX = i
                         minY = j
-        for i in self.sudokuNum[minX][minY]:
-            self.currentInsert.append([minX, minY, i])
+        if minX != 9 and minY != 9:
+            for i in self.sudokuNum[minX][minY]:
+                self.currentInsert.append([minX, minY, i])
+        else:
+            return 1
             
     def findOnlyOne(self):
         self.currentInsert = []
@@ -190,7 +236,6 @@ class SudokuGrid(QWidget):
                         if p+1 in self.sudokuNum[i][j]:
                             if self.newOnlyOne[i][j] == 0:
                                 self.currentInsert.append([i, j, p+1])
-                                self.newOnlyOne[i][j] = 1
                                 return 1
                                 
         for j in range(9):
@@ -204,7 +249,6 @@ class SudokuGrid(QWidget):
                         if p+1 in self.sudokuNum[i][j]:
                             if self.newOnlyOne[i][j] == 0:
                                 self.currentInsert.append([i, j, p+1])
-                                self.newOnlyOne[i][j] = 1
                                 return 1
                                 
         for i in range(3):
@@ -221,7 +265,6 @@ class SudokuGrid(QWidget):
                                 if o+1 in self.sudokuNum[i*3+p][j*3+q]:
                                     if self.newOnlyOne[i*3+p][j*3+q] == 0:
                                         self.currentInsert.append([i*3+p, j*3+q, o+1])
-                                        self.newOnlyOne[i*3+p][j*3+q] = 1
                                         return 1
         return 0
 
