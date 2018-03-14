@@ -1,6 +1,6 @@
-import sys
-from PyQt5.QtWidgets import QWidget, QTableWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QApplication, QAbstractItemView, QTableWidgetItem, QPushButton
-from PyQt5.QtCore import Qt
+import sys, os
+from PyQt5.QtWidgets import QWidget, QTableWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QApplication, QAbstractItemView, QTableWidgetItem, QPushButton, QFileDialog
+from PyQt5.QtCore import Qt, QFile, QIODevice, QTextStream
 from PyQt5.QtGui import QFont
 
 class SudokuGrid(QWidget):
@@ -26,7 +26,9 @@ class SudokuGrid(QWidget):
                     smallGrid.setColumnWidth(r, 30)
                 self.sudokuGrid[i].append(smallGrid)
 
-        self.fillBt = QPushButton('填充')
+        self.openFileBt = QPushButton('打开文件')
+        self.fillBt = QPushButton('填充数独')
+        self.fillBt.setEnabled(False)
 
         sudokuLayout = QGridLayout()
         sudokuLayout.setSpacing(1)
@@ -36,6 +38,7 @@ class SudokuGrid(QWidget):
 
         controlLayout = QHBoxLayout()
         controlLayout.addStretch()
+        controlLayout.addWidget(self.openFileBt)
         controlLayout.addWidget(self.fillBt)
         controlLayout.addStretch()
 
@@ -46,6 +49,7 @@ class SudokuGrid(QWidget):
         self.setLayout(mainLayout)
         self.show()
         self.sudokuGridInit()
+        self.openFileBt.clicked.connect(self.openTxtFile)
         self.fillBt.clicked.connect(self.fillBtClicked)
 
     def sudokuGridInit(self):
@@ -60,31 +64,29 @@ class SudokuGrid(QWidget):
             self.newOnlyOne.append([0, 0, 0, 0, 0, 0, 0, 0, 0])
 
         self.sudokuNumInit()
-
-        self.insertListConfirmed = []
-        self.insertListConfirmed.append([[1, 2, 2]])
-        self.insertListConfirmed.append([[1, 4, 5]])
-        self.insertListConfirmed.append([[0, 6, 1]])
-        self.insertListConfirmed.append([[0, 8, 3]])
-        self.insertListConfirmed.append([[3, 0, 1]])
-        self.insertListConfirmed.append([[3, 5, 7]])
-        self.insertListConfirmed.append([[4, 3, 9]])
-        self.insertListConfirmed.append([[4, 5, 3]])
-        self.insertListConfirmed.append([[4, 7, 5]])
-        self.insertListConfirmed.append([[5, 2, 4]])
-        self.insertListConfirmed.append([[5, 7, 2]])
-        self.insertListConfirmed.append([[6, 0, 7]])
-        self.insertListConfirmed.append([[7, 0, 3]])
-        self.insertListConfirmed.append([[7, 4, 6]])
-        self.insertListConfirmed.append([[8, 4, 4]])
-        self.insertListConfirmed.append([[8, 6, 2]])
-        self.insertListConfirmed.append([[8, 7, 6]])
-
-        for i in range(len(self.insertListConfirmed)):
-            self.setGridItem(self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][0], self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][1], self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][2])
-            self.newOnlyOne[self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][0]][self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][1]] = 1
-
-        self.showAllAlone()
+        
+    def openTxtFile(self):
+        filePath = QFileDialog.getOpenFileName(self, "Open Txt File", os.getcwd()+"/sudokuIni/", "Txt Files(*.txt)")
+        file = QFile(filePath[0])
+        if file.open(QIODevice.ReadOnly):
+            fileTxt = QTextStream(file)
+            self.insertArray = []
+            for i in range(9):
+                self.insertArray.append([])
+                line = fileTxt.readLine()
+                lineParts = line.split(' ')
+                for j in range(9):
+                    self.insertArray[i].append(int(lineParts[j]))
+            self.insertListConfirmed = []
+            for i in range(9):
+                for j in range(9):
+                    if self.insertArray[i][j] != 0:
+                        self.insertListConfirmed.append([[i, j, self.insertArray[i][j]]])
+            for i in range(len(self.insertListConfirmed)):
+                self.setGridItem(self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][0], self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][1], self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][2])
+                self.newOnlyOne[self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][0]][self.insertListConfirmed[i][len(self.insertListConfirmed[i])-1][1]] = 1
+            self.showAllAlone()
+            self.fillBt.setEnabled(True)
 
     def setGridItem(self, row, column, number):
         i = row // 3
