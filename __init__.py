@@ -95,7 +95,7 @@ class SudokuGrid(QWidget):
         jj = column % 3
         self.setSudokuGrid(number, i, j, ii, jj)
         self.sudokuNum[row][column] = [number]         #根据确定下来的数字，填充self.sudokuNum
-        self.removeOthers(row, column, number)          #根据确定下来的数字，清楚相应行、列和3*3单元内的相同数字
+        self.removeOthers(row, column, number)          #根据确定下来的数字，清除相应行、列和3*3单元内的相同数字
 
     def sudokuNumInit(self):
         self.sudokuNum = []
@@ -231,6 +231,8 @@ class SudokuGrid(QWidget):
     def findOnlyOne(self):
         #查找隐藏或显式的新唯一点
         self.currentInsert = []
+        
+        #查找每行中是否存在新唯一点
         for i in range(9):
             appearTimes = [0, 0, 0, 0, 0, 0, 0, 0, 0]
             for j in range(9):
@@ -244,6 +246,7 @@ class SudokuGrid(QWidget):
                                 self.currentInsert.append([i, j, p+1])
                                 return 1
                                 
+        #查找每列中是否存在新唯一点
         for j in range(9):
             appearTimes = [0, 0, 0, 0, 0, 0, 0, 0, 0]
             for i in range(9):
@@ -257,6 +260,7 @@ class SudokuGrid(QWidget):
                                 self.currentInsert.append([i, j, p+1])
                                 return 1
                                 
+        #查找每个3*3单元中是否存在新唯一点
         for i in range(3):
             for j in range(3):
                 appearTimes = [0, 0, 0, 0, 0, 0, 0, 0, 0]
